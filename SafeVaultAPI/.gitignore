@@ -1,0 +1,63 @@
+# Ignore build output
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+.history/
+
+# Rider
+.idea/
+
+# Mac & Windows system files
+.DS_Store
+Thumbs.db
+
+# ASP.NET & Blazor specific
+wwwroot/
+node_modules/
+dist/
+build/
+
+# Environment files
+.env
+*.secret
+
+# Log files
+*.log
+
+# NuGet
+*.nupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Backup & temp files
+*.bak
+*.tmp
+*.swp
+*.sln.ide
+
+# Publish output
+**/publish/
+**/out/
+
+# Entity Framework Migrations snapshot files
+*Migrations/*.Designer.cs
+*Migrations/*ModelSnapshot.cs
+
+# Optional: Uncomment if using secrets.json for development only
+appsettings*.json

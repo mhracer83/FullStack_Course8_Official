@@ -1,0 +1,178 @@
+@page "/register"
+@using System.Net.Http.Json
+@using System.ComponentModel.DataAnnotations
+@using SafeVault.Classes
+@using SafeVault.Shared
+@using System.Text;
+@inject HttpClient HttpClient
+
+<h3>Register User</h3>
+
+<EditForm Model="@registrationData" OnValidSubmit="@RegisterUserAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="@registrationData.Username" />
+        <ValidationMessage For="@(() => registrationData.Username)" />
+    </div>
+
+    <div>
+        <label for="email">Email:</label>
+        <InputText id="email" type="email" @bind-Value="@registrationData.Email" />
+        <ValidationMessage For="@(() => registrationData.Email)" />
+    </div>
+
+    <div>
+        <label for="password">Password:</label>
+        <InputText id="password" type="password" @bind-Value="@registrationData.Password" />
+        <ValidationMessage For="@(() => registrationData.Password)" />
+    </div>
+
+    <div>
+        <label for="confirm-password">Confirm Password:</label>
+        <InputText id="confirm-password" type="password" @bind-Value="@registrationData.ConfirmPassword" />
+        <ValidationMessage For="@(() => registrationData.ConfirmPassword)" />
+    </div>
+
+    <button type="submit">Register</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(resultMessage))
+{
+    <p>@resultMessage</p>
+}
+
+@code {
+    private RegistrationData registrationData = new();
+
+    private string resultMessage;
+
+
+
+    private async Task RegisterUserAsync()
+    {
+        try
+        {
+            //Sanitze the inputs
+            registrationData.Username = InputSanitizer.SanitizeInput(registrationData.Username);
+            registrationData.Email = InputSanitizer.SanitizeInput(registrationData.Email);
+
+            // Call the API endpoint for registration
+            var response = await HttpClient.PostAsJsonAsync("http://localhost:5299/api/auth/register", registrationData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                resultMessage = "Registration successful!";
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                resultMessage = $"Registration failed: {errorContent}";
+            }
+        }
+        catch (Exception ex)
+        {
+            resultMessage = $"An error occurred: {ex.Message}";
+        }
+    }
+
+    public class RegistrationData
+    {
+        [Required(ErrorMessage = "Username is required")]
+        [MinLength(3, ErrorMessage = "Username must be at least 3 characters long")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required")]
+        [RegularExpression(@"^(?!.*[\s<>]).*$", ErrorMessage = "Password cannot contain spaces or HTML tags")]
+        [PasswordStrength]
+        public string Password { get; set; }
+
+        [Required(ErrorMessage = "Confirm Password is required")]
+        [ComparePasswords(nameof(Password))]
+        public string ConfirmPassword { get; set; }
+    }
+
+    public class ComparePasswordsAttribute : ValidationAttribute
+    {
+        private readonly string _comparisonProperty;
+
+        public ComparePasswordsAttribute(string comparisonProperty)
+        {
+            _comparisonProperty = comparisonProperty;
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var currentValue = value?.ToString();
+            var property = validationContext.ObjectType.GetProperty(_comparisonProperty);
+
+            if (property == null)
+            {
+                return new ValidationResult($"Property '{_comparisonProperty}' not found.");
+            }
+
+            var comparisonValue = property.GetValue(validationContext.ObjectInstance)?.ToString();
+
+            if (currentValue != comparisonValue)
+            {
+                return new ValidationResult("Passwords do not match.");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    public class PasswordStrengthAttribute : ValidationAttribute
+    {
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var password = value?.ToString();
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return new ValidationResult("Password cannot be empty.");
+            }
+
+            var errorMessages = new StringBuilder();
+
+            if (password.Length < 12)
+            {
+                errorMessages.AppendLine("Password must be at least 12 characters long.");
+            }
+
+            if (!password.Any(char.IsUpper))
+            {
+                errorMessages.AppendLine("Password must contain at least one uppercase letter.");
+            }
+
+            if (!password.Any(char.IsLower))
+            {
+                errorMessages.AppendLine("Password must contain at least one lowercase letter.");
+            }
+
+            if (!password.Any(char.IsDigit))
+            {
+                errorMessages.AppendLine("Password must contain at least one number.");
+            }
+
+            if (!password.Any(ch => "!@#$%^&*()".Contains(ch)))
+            {
+                errorMessages.AppendLine("Password must contain at least one special character (!@#$%^&*()).");
+            }
+
+            if (errorMessages.Length > 0)
+            {
+                return new ValidationResult(errorMessages.ToString().Trim());
+            }
+
+            return ValidationResult.Success; // Password meets all criteria
+        }
+    }
+
+}
