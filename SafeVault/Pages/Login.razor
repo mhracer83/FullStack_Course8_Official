@@ -1,0 +1,75 @@
+@page "/"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="login-form">
+    <h2>Login</h2>
+    <form @onsubmit="HandleLogin">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" @bind="Username" required />
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" @bind="Password" required />
+        </div>
+        <div>
+            <button type="submit">Login</button>
+        </div>
+    </form>
+    <div>
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <p class="error-message">@ErrorMessage</p>
+        }
+    </div>
+</div>
+
+@code {
+    private string Username { get; set; }
+    private string Password { get; set; }
+    private string ErrorMessage { get; set; }
+
+    private async Task HandleLogin()
+    {
+        if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
+        {
+            ErrorMessage = "Please provide both username and password.";
+            return;
+        }
+
+        var user = new { Username, HashedPassword = Password }; // Password is passed as-is for hashing in backend
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/login", user);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<dynamic>();
+                var role = result?.Role;
+
+                // Redirect based on role
+                if (role == "Admin")
+                {
+                    Navigation.NavigateTo("/AdminPage");
+                }
+                else if (role == "User")
+                {
+                    Navigation.NavigateTo("/UserPage");
+                }
+                else
+                {
+                    ErrorMessage = "Role not recognized.";
+                }
+            }
+            else
+            {
+                ErrorMessage = "Invalid username or password.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An error occurred: {ex.Message}";
+        }
+    }
+}

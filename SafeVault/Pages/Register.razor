@@ -59,8 +59,16 @@
             registrationData.Username = InputSanitizer.SanitizeInput(registrationData.Username);
             registrationData.Email = InputSanitizer.SanitizeInput(registrationData.Email);
 
+            // Map Password to HashedPassword before sending
+            var payload = new
+            {
+                Username = registrationData.Username,
+                Email = registrationData.Email,
+                HashedPassword = registrationData.Password // Send the password as "HashedPassword"
+            };
+
             // Call the API endpoint for registration
-            var response = await HttpClient.PostAsJsonAsync("http://localhost:5299/api/auth/register", registrationData);
+            var response = await HttpClient.PostAsJsonAsync("api/auth/register", payload);
 
             if (response.IsSuccessStatusCode)
             {

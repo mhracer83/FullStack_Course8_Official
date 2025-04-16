@@ -16,7 +16,9 @@ builder.Services.AddCors(options =>
 });
 
 // Add the AuthenticationService to the DI container
-builder.Services.AddSingleton<AuthenticationService>();
+builder.Services.AddScoped(sp => new AuthenticationService(
+    builder.Configuration.GetConnectionString("MySqlConnection") // Pass the connection string
+));
 
 builder.Services.AddControllers(); // If you're using controllers
 
@@ -26,7 +28,8 @@ var app = builder.Build();
 app.UseCors("AllowSpecificOrigins");
 
 // Other middleware
-//app.UseAuthorization();
+app.UseHttpsRedirection();
+app.UseAuthorization();
 
 app.MapControllers(); // If you're using controllers
 

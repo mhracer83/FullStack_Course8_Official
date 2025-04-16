@@ -6,5 +6,6 @@ namespace SafeVaultAPI.Models
         public string Email { get; set; }
         public string HashedPassword { get; set; } // For securely storing passwords
         public int UserID { get; set; } // Unique identifier
+        public string Role { get; set; } = "User";
     }
 }

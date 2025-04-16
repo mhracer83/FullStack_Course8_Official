@@ -1,6 +1,21 @@
-# Ignore build output
+# Build output
 **/bin/
 **/obj/
+**/publish/
+**/out/
+
+# Build artifacts
+*.dll
+*.exe
+*.pdb
+*.app
+*.so
+*.dylib
+*.lib
+*.a
+*.cache
+*.db
+*.gz
 
 # User-specific files
 *.user
@@ -25,9 +40,10 @@ node_modules/
 dist/
 build/
 
-# Environment files
+# Environment and config
 .env
 *.secret
+appsettings.Development.json
 
 # Log files
 *.log
@@ -50,10 +66,6 @@ TestResults/
 *.tmp
 *.swp
 *.sln.ide
-
-# Publish output
-**/publish/
-**/out/
 
 # Entity Framework Migrations snapshot files
 *Migrations/*.Designer.cs

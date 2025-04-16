@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using SafeVault.Shared; // For InputSanitizer
 using SafeVaultAPI.Models; // For the User class
 
-//using SafeVaultAPI.Services; // For the AuthenticationService
-
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly AuthenticationService _authenticationService;
@@ -17,17 +16,45 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register([FromBody] User user)
     {
-        var success = _authenticationService.RegisterUser(user.Username, user.HashedPassword);
+        if (
+            user == null
+            || string.IsNullOrEmpty(user.Username)
+            || string.IsNullOrEmpty(user.HashedPassword)
+        )
+        {
+            return BadRequest("Invalid user data.");
+        }
+
+        // Assign a default role (e.g., "User") on the backend
+        var defaultRole = "User";
+
+        // Register the user
+        var success = _authenticationService.RegisterUser(
+            user.Username,
+            user.Email,
+            user.HashedPassword,
+            defaultRole
+        );
         if (!success)
         {
-            return BadRequest("Username already exists.");
+            return Conflict("Username already exists.");
         }
+
         return Ok("User registered successfully.");
     }
 
     [HttpPost("login")]
     public IActionResult Login([FromBody] User user)
     {
+        if (
+            user == null
+            || string.IsNullOrEmpty(user.Username)
+            || string.IsNullOrEmpty(user.HashedPassword)
+        )
+        {
+            return BadRequest("Invalid user data.");
+        }
+
         var isAuthenticated = _authenticationService.AuthenticateUser(
             user.Username,
             user.HashedPassword
@@ -36,6 +63,8 @@ public class AuthController : ControllerBase
         {
             return Unauthorized("Invalid username or password.");
         }
-        return Ok("Login successful.");
+
+        var role = _authenticationService.GetUserRole(user.Username); // Retrieve user role
+        return Ok(new { Role = role });
     }
 }
