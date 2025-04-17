@@ -1,0 +1,14 @@
+@using SafeVault.Services
+
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
+
+<button @onclick="Logout">Logout</button>
+
+@code {
+    private void Logout()
+    {
+        AuthStateProvider.MarkUserAsLoggedOut();
+        Navigation.NavigateTo("/login");
+    }
+}

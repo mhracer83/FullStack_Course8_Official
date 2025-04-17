@@ -65,6 +65,6 @@ public class AuthController : ControllerBase
         }
 
         var role = _authenticationService.GetUserRole(loginRequest.Username);
-        return Ok(new { Role = role });
+        return Ok(new { Username = loginRequest.Username, Role = role });
     }
 }

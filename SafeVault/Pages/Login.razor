@@ -1,7 +1,10 @@
-@page "/"
+@page "/Login"
 @using SafeVault.Classes
+@using SafeVault.Services
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthProvider
+
 
 <div class="login-form">
     <h2>Login</h2>
@@ -46,21 +49,17 @@
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<User>();
-                var role = result?.Role;
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (result != null)
+                {
+                    await AuthProvider.MarkUserAsAuthenticated(result.Username, result.Role);
 
-                // Redirect based on role
-                if (role == "Admin")
-                {
-                    Navigation.NavigateTo("/AdminPage");
-                }
-                else if (role == "User")
-                {
-                    Navigation.NavigateTo("/UserPage");
+                    // Redirect based on role
+                    Navigation.NavigateTo(result.Role == "Admin" ? "/AdminPage" : "/UserPage");
                 }
                 else
                 {
-                    ErrorMessage = "Role not recognized.";
+                    ErrorMessage = "Unexpected response from server.";
                 }
             }
             else
