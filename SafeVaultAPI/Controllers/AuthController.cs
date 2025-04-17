@@ -44,27 +44,27 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] User user)
+    public IActionResult Login([FromBody] LoginRequestDTO loginRequest)
     {
         if (
-            user == null
-            || string.IsNullOrEmpty(user.Username)
-            || string.IsNullOrEmpty(user.HashedPassword)
+            loginRequest == null
+            || string.IsNullOrEmpty(loginRequest.Username)
+            || string.IsNullOrEmpty(loginRequest.Password)
         )
         {
-            return BadRequest("Invalid user data.");
+            return BadRequest("Invalid username or password.");
         }
 
         var isAuthenticated = _authenticationService.AuthenticateUser(
-            user.Username,
-            user.HashedPassword
+            loginRequest.Username,
+            loginRequest.Password
         );
         if (!isAuthenticated)
         {
             return Unauthorized("Invalid username or password.");
         }
 
-        var role = _authenticationService.GetUserRole(user.Username); // Retrieve user role
+        var role = _authenticationService.GetUserRole(loginRequest.Username);
         return Ok(new { Role = role });
     }
 }

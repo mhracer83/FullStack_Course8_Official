@@ -1,4 +1,5 @@
 @page "/"
+@using SafeVault.Classes
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
@@ -38,14 +39,14 @@
             return;
         }
 
-        var user = new { Username, HashedPassword = Password }; // Password is passed as-is for hashing in backend
+        var user = new { Username, Password };
         try
         {
             var response = await Http.PostAsJsonAsync("api/auth/login", user);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<dynamic>();
+                var result = await response.Content.ReadFromJsonAsync<User>();
                 var role = result?.Role;
 
                 // Redirect based on role
