@@ -16,8 +16,12 @@ builder.Services.AddCors(options =>
 });
 
 // Add the AuthenticationService to the DI container
-builder.Services.AddScoped(sp => new AuthenticationService(
+/*builder.Services.AddScoped(sp => new AuthenticationService(
     builder.Configuration.GetConnectionString("MySqlConnection") // Pass the connection string
+));*/
+
+builder.Services.AddScoped<IAuthenticationService>(sp => new AuthenticationService(
+    builder.Configuration.GetConnectionString("MySqlConnection")
 ));
 
 builder.Services.AddControllers(); // If you're using controllers

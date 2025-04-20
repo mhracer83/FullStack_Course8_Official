@@ -1,29 +1,54 @@
 @page "/AdminPage"
 @using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize(Roles = "Admin")]
 
-<div class="admin-container">
-    <h1>You are an admin!</h1>
-    <p>Welcome to the admin page. Enjoy your elevated privileges!</p>
-</div>
 
-<style>
-    .admin-container {
-        margin: 20px;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        background-color: #f9f9f9;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #ddd;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
+@code {
+    private bool IsAdmin;
 
-    h1 {
-        color: #007bff;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        IsAdmin = user.IsInRole("Admin");
     }
+}
 
-    p {
-        color: #333;
-    }
-</style>
+@if (!IsAdmin)
+{
+    <div class="admin-container">
+        <p>You are NOT an admin Admin!</p>
+    </div>
+}
+
+@if (IsAdmin)
+{
+    <div class="admin-container">
+        <h1>You are an admin!</h1>
+        <p>Welcome to the admin page. Enjoy your elevated privileges!</p>
+    </div>
+
+    <style>
+        .admin-container {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        p {
+            color: #333;
+        }
+    </style>
+}

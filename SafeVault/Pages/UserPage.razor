@@ -1,29 +1,56 @@
 @page "/UserPage"
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "User")]
 
-<div class="user-container">
-    <h1>You are user!</h1>
-    <p>Welcome to the user page!</p>
-</div>
 
-<style>
-    .user-container {
-        margin: 20px;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        background-color: #f9f9f9;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #ddd;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+@code {
+    private bool IsUser;
+    private bool IsAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        IsUser = user.IsInRole("User");
+        IsAdmin = user.IsInRole("Admin");
     }
+}
 
-    h1 {
-        color: #007bff;
-    }
+@if (!IsUser && !IsAdmin)
+{
+    <div class="user-container">
+        <p>You need to login. Please return to the login page.</p>
+    </div>
+}
 
-    p {
-        color: #333;
-    }
-</style>
+@if (IsUser || IsAdmin)
+{
+    <div class="user-container">
+        <h1>You are a user!</h1>
+        <p>Welcome to the user page!</p>
+    </div>
+
+    <style>
+        .user-container {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        p {
+            color: #333;
+        }
+    </style>
+}

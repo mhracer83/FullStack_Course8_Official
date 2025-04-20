@@ -73,6 +73,8 @@
             if (response.IsSuccessStatusCode)
             {
                 resultMessage = "Registration successful!";
+                //Clear the form after successful registration
+                registrationData = new RegistrationData();
             }
             else
             {

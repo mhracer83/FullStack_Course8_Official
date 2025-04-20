@@ -1,7 +1,8 @@
+using System.Security.Claims;
 using MySql.Data.MySqlClient;
 using SafeVault.Shared; // For InputSanitizer
 
-public class AuthenticationService
+public class AuthenticationService : IAuthenticationService
 {
     private readonly string _connectionString;
 
@@ -93,5 +94,22 @@ public class AuthenticationService
             var role = command.ExecuteScalar() as string;
             return role ?? "Unknown"; // Default to "Unknown" if no role is found
         }
+    }
+
+    public ClaimsPrincipal? GetClaimsPrincipal(string username, string password)
+    {
+        if (!AuthenticateUser(username, password))
+            return null;
+
+        var role = GetUserRole(username);
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Role, role),
+        };
+
+        var identity = new ClaimsIdentity(claims, "SafeVaultAuth");
+        return new ClaimsPrincipal(identity);
     }
 }

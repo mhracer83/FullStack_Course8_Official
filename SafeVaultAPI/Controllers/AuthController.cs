@@ -6,9 +6,9 @@ using SafeVaultAPI.Models; // For the User class
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthenticationService _authenticationService;
+    private readonly IAuthenticationService _authenticationService;
 
-    public AuthController(AuthenticationService authenticationService)
+    public AuthController(IAuthenticationService authenticationService)
     {
         _authenticationService = authenticationService;
     }
@@ -16,6 +16,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register([FromBody] User user)
     {
+        user.Username = InputSanitizer.SanitizeInput(user.Username);
         if (
             user == null
             || string.IsNullOrEmpty(user.Username)
@@ -46,6 +47,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequestDTO loginRequest)
     {
+        loginRequest.Username = InputSanitizer.SanitizeInput(loginRequest.Username);
         if (
             loginRequest == null
             || string.IsNullOrEmpty(loginRequest.Username)

@@ -15,26 +15,3 @@
         </LayoutView>
     </NotFound>
 </Router>
-
-@inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthStateProvider
-
-@code {
-    private bool IsUserAuthenticated { get; set; }
-
-    // Method to handle authentication status check
-    protected override async Task OnInitializedAsync()
-    {
-        var state = await AuthStateProvider.GetAuthenticationStateAsync(); // Get the authentication state
-
-        if (!state?.User?.Identity?.IsAuthenticated == true)
-        {
-            // Redirect to login page if the user is not authenticated
-            Navigation.NavigateTo("/login");
-        }
-        else
-        {
-            IsUserAuthenticated = true;
-        }
-    }
-}
